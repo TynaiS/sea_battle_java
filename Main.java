@@ -16,38 +16,6 @@ public class Main {
 
 		Map<String, ArrayList<ArrayList<Integer>>> ships = new HashMap<String, ArrayList<ArrayList<Integer>>>();
 
-		// ArrayList<ArrayList<Integer>> ship2 = new ArrayList<ArrayList<Integer>>();
-		// ArrayList<ArrayList<Integer>> ship3 = new ArrayList<ArrayList<Integer>>();
-
-		// ArrayList<Integer> row1 = new ArrayList<Integer>();
-		// row1.add(1);
-		// row1.add(2);
-		// ship2.add(row1);
-		// ArrayList<Integer> row2 = new ArrayList<Integer>();
-		// row2.add(3);
-		// row2.add(4);
-		// ship2.add(row2);
-		// ships.put("ship2", ship2);
-
-		// ArrayList<Integer> row3 = new ArrayList<Integer>();
-		// row3.add(1);
-		// row3.add(2);
-		// ship3.add(row3);
-
-		// ArrayList<Integer> row4 = new ArrayList<Integer>();
-		// row4.add(3);
-		// row4.add(4);
-		// ship3.add(row4);
-
-		// ArrayList<Integer> row5 = new ArrayList<Integer>();
-		// row5.add(5);
-		// row5.add(6);
-		// ship3.add(row5);
-
-		// ships.put("ship3", ship3);
-
-		// System.out.println(ships);
-
 		defaultTable = createTable(dimension);
 		displayTable(defaultTable, dimension);
 
