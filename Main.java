@@ -23,12 +23,10 @@ public class Main {
 		// row1.add(1);
 		// row1.add(2);
 		// ship2.add(row1);
-
 		// ArrayList<Integer> row2 = new ArrayList<Integer>();
 		// row2.add(3);
 		// row2.add(4);
 		// ship2.add(row2);
-
 		// ships.put("ship2", ship2);
 
 		// ArrayList<Integer> row3 = new ArrayList<Integer>();
