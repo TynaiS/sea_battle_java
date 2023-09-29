@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Main {
 	public static void main(String[] args) {
@@ -16,13 +17,89 @@ public class Main {
 
 		Map<String, ArrayList<ArrayList<Integer>>> ships = new HashMap<String, ArrayList<ArrayList<Integer>>>();
 
-		defaultTable = createTable(dimension);
-		displayTable(defaultTable, dimension);
+		System.out.println(ships);
 
-		while (true) {
-			defaultTable = shoot(defaultTable);
-			displayTable(defaultTable, dimension);
+		defaultTable = createTable(dimension);
+		createThreeBlockShip(defaultTable, ships, ver, hor);
+
+		// while (true) {
+		// defaultTable = shoot(defaultTable);
+		// displayTable(defaultTable, dimension);
+		// }
+	}
+
+	private static void createShips() {
+	}
+
+	private static ArrayList createThreeBlockShip(String[][] table, Map<String, ArrayList<ArrayList<Integer>>> ships,
+			String ver, String hor) {
+
+		ArrayList response = new ArrayList<>();
+		boolean isLocationValid = false;
+		Set<String> keys = ships.keySet();
+
+		while (!isLocationValid) {
+			boolean flag = true;
+			String direction = setShipDirection(ver, hor);
+
+			int[][] shipCooridnates = new int[3][2];
+
+			int[] startingCoodinates = getRandomCoordinates();
+			int[] shipFront = new int[2];
+			int[] shipBack = new int[2];
+
+			if (direction == ver) {
+				if (startingCoodinates[0] == 0 || startingCoodinates[0] == 6) {
+					flag = false;
+				}
+
+				shipFront = new int[] { startingCoodinates[0] - 1, startingCoodinates[1] };
+				shipBack = new int[] { startingCoodinates[0] + 1, startingCoodinates[1] };
+
+				ships.put("ship" + startingCoodinates[0] + startingCoodinates[1],
+						convertShipCoordinatesToArrayList(startingCoodinates, shipFront, shipBack));
+			} else if (direction == hor) {
+				if (startingCoodinates[1] == 0 || startingCoodinates[1] == 6) {
+					flag = false;
+				}
+
+				shipFront = new int[] { startingCoodinates[0], startingCoodinates[1] - 1 };
+				shipBack = new int[] { startingCoodinates[0], startingCoodinates[1] + 1 };
+
+				ships.put("ship" + startingCoodinates[0] + startingCoodinates[1],
+						convertShipCoordinatesToArrayList(startingCoodinates, shipFront, shipBack));
+			}
+
+			if (flag) {
+				isLocationValid = true;
+				shipCooridnates[0] = shipFront;
+				shipCooridnates[1] = startingCoodinates;
+				shipCooridnates[2] = shipBack;
+				displayTableWithShips(table, shipCooridnates, 7);
+			}
 		}
+
+		response.add(table);
+		response.add(ships);
+
+		return response;
+
+	}
+
+	private static ArrayList<ArrayList<Integer>> convertShipCoordinatesToArrayList(int[] firstCoordinates,
+			int[] secondCoordinates, int[] thirdCoordinates) {
+
+		ArrayList<ArrayList<Integer>> ship = new ArrayList<ArrayList<Integer>>();
+		int[][] shipCoordinates = new int[][] { firstCoordinates, secondCoordinates, thirdCoordinates };
+
+		for (int[] i : shipCoordinates) {
+			ArrayList<Integer> row = new ArrayList<Integer>();
+			row.add(i[0]);
+			row.add(i[1]);
+			ship.add(row);
+		}
+
+		return ship;
 	}
 
 	private static String[][] shoot(String[][] table) {
@@ -42,6 +119,32 @@ public class Main {
 			System.out.print(i + 1 + " ");
 			for (int j = 0; j < dimension; j++) {
 				System.out.print(table[i][j] + " ");
+			}
+			System.out.println();
+		}
+	}
+
+	private static void displayTableWithShips(String[][] table, int[][] shipCoordinates, int dimension) {
+		System.out.println("  A B C D E F G");
+		for (int i = 0; i < dimension; i++) {
+			System.out.print(i + 1 + " ");
+			for (int j = 0; j < dimension; j++) {
+
+				boolean isShipThere = false;
+
+				for (int[] k : shipCoordinates) {
+					if (k[0] == i && k[1] == j) {
+						isShipThere = true;
+					}
+
+				}
+
+				if (isShipThere) {
+					System.out.print("O ");
+				} else {
+					System.out.print(table[i][j] + " ");
+				}
+
 			}
 			System.out.println();
 		}
@@ -70,7 +173,6 @@ public class Main {
 			lettersAndNums.put("E", 5);
 			lettersAndNums.put("F", 6);
 			lettersAndNums.put("G", 7);
-
 		}
 
 		System.out.println(lettersAndNums.get(letter) + " " + letter);
@@ -79,6 +181,7 @@ public class Main {
 	}
 
 	private static String setShipDirection(String ver, String hor) {
+
 		String ans = "";
 		if (Math.random() > 0.5) {
 			ans = ver;
@@ -87,5 +190,14 @@ public class Main {
 		}
 
 		return ans;
+	}
+
+	private static int[] getRandomCoordinates() {
+
+		int[] coordinates = new int[2];
+		coordinates[0] = (int) (Math.random() * 7);
+		coordinates[1] = (int) (Math.random() * 7);
+
+		return coordinates;
 	}
 }
