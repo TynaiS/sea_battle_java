@@ -20,69 +20,187 @@ public class Main {
 		System.out.println(ships);
 
 		defaultTable = createTable(dimension);
-		createThreeBlockShip(defaultTable, ships, ver, hor);
+		ships = createThreeBlockShip(defaultTable, ships, ver, hor);
+		ships = createTwoBlockShip(defaultTable, ships, ver, hor);
+		ships = createTwoBlockShip(defaultTable, ships, ver, hor);
+		System.out.println(ships);
+
+		displayTableWithShips(defaultTable, ships, dimension);
 
 		// while (true) {
 		// defaultTable = shoot(defaultTable);
-		// displayTable(defaultTable, dimension);
+		// displayTable defaultTable, dimension)
 		// }
 	}
 
 	private static void createShips() {
 	}
 
-	private static ArrayList createThreeBlockShip(String[][] table, Map<String, ArrayList<ArrayList<Integer>>> ships,
+	private static Map<String, ArrayList<ArrayList<Integer>>> createTwoBlockShip(String[][] table,
+			Map<String, ArrayList<ArrayList<Integer>>> ships,
 			String ver, String hor) {
 
-		ArrayList response = new ArrayList<>();
 		boolean isLocationValid = false;
 		Set<String> keys = ships.keySet();
+		Object[] keysArr = keys.toArray();
+		int[] shipFront = new int[2];
+
+		while (!isLocationValid) {
+			String direction = setShipDirection(ver, hor);
+
+			int[] startingCoodinates = getRandomCoordinates();
+
+			if (direction == ver) {
+				if (startingCoodinates[0] == 0) {
+					continue;
+				} else {
+					boolean flag = true;
+
+					for (int i = 0; i < keysArr.length; i++) {
+						if (!flag) {
+							break;
+						}
+						for (ArrayList<Integer> arr : ships.get(keysArr[i])) {
+							if (arr.get(0) == startingCoodinates[0] && arr.get(1) == startingCoodinates[1] ||
+									arr.get(0) == startingCoodinates[0] - 1 && arr.get(1) == startingCoodinates[1] ||
+									arr.get(0) == startingCoodinates[0] + 1 && arr.get(1) == startingCoodinates[1] - 1
+									||
+									arr.get(0) == startingCoodinates[0] && arr.get(1) == startingCoodinates[1] - 1 ||
+									arr.get(0) == startingCoodinates[0] - 1 && arr.get(1) == startingCoodinates[1] - 1
+									||
+									arr.get(0) == startingCoodinates[0] - 2 && arr.get(1) == startingCoodinates[1] - 1
+									||
+									arr.get(0) == startingCoodinates[0] - 2 && arr.get(1) == startingCoodinates[1] ||
+									arr.get(0) == startingCoodinates[0] - 2 && arr.get(1) == startingCoodinates[1] + 1
+									||
+									arr.get(0) == startingCoodinates[0] - 1 && arr.get(1) == startingCoodinates[1] + 1
+									||
+									arr.get(0) == startingCoodinates[0] && arr.get(1) == startingCoodinates[1] + 1 ||
+									arr.get(0) == startingCoodinates[0] + 1 && arr.get(1) == startingCoodinates[1] + 1
+									||
+									arr.get(0) == startingCoodinates[0] + 1 && arr.get(1) == startingCoodinates[1]) {
+
+								flag = false;
+								break;
+							}
+						}
+					}
+
+					if (flag) {
+						shipFront[0] = startingCoodinates[0] - 1;
+						shipFront[1] = startingCoodinates[1];
+
+						ships.put("ship" + startingCoodinates[0] + startingCoodinates[1],
+								convertShipCoordinatesToArrayList(startingCoodinates, shipFront));
+
+						isLocationValid = true;
+					}
+				}
+
+			} else if (direction == hor) {
+				if (startingCoodinates[1] == 6) {
+					continue;
+				} else {
+					boolean flag = true;
+
+					for (int i = 0; i < keysArr.length; i++) {
+						if (!flag) {
+							break;
+						}
+						for (ArrayList<Integer> arr : ships.get(keysArr[i])) {
+							if (arr.get(0) == startingCoodinates[0] && arr.get(1) == startingCoodinates[1] ||
+									arr.get(0) == startingCoodinates[0] && arr.get(1) == startingCoodinates[1] + 1 ||
+									arr.get(0) == startingCoodinates[0] - 1 && arr.get(1) == startingCoodinates[1] - 1
+									||
+									arr.get(0) == startingCoodinates[0] - 1 && arr.get(1) == startingCoodinates[1] ||
+									arr.get(0) == startingCoodinates[0] - 1 && arr.get(1) == startingCoodinates[1] + 1
+									||
+									arr.get(0) == startingCoodinates[0] - 1 && arr.get(1) == startingCoodinates[1] + 2
+									||
+									arr.get(0) == startingCoodinates[0] + 1 && arr.get(1) == startingCoodinates[1] - 1
+									||
+									arr.get(0) == startingCoodinates[0] + 1 && arr.get(1) == startingCoodinates[1]
+									||
+									arr.get(0) == startingCoodinates[0] + 1 && arr.get(1) == startingCoodinates[1] + 1
+									||
+									arr.get(0) == startingCoodinates[0] + 1 && arr.get(1) == startingCoodinates[1] + 2
+									||
+									arr.get(0) == startingCoodinates[0] && arr.get(1) == startingCoodinates[1] - 1
+									||
+									arr.get(0) == startingCoodinates[0] && arr.get(1) == startingCoodinates[1] + 2) {
+
+								flag = false;
+								break;
+							}
+						}
+					}
+
+					if (flag) {
+						shipFront[0] = startingCoodinates[0];
+						shipFront[1] = startingCoodinates[1] + 1;
+
+						ships.put("ship" + startingCoodinates[0] + startingCoodinates[1],
+								convertShipCoordinatesToArrayList(startingCoodinates, shipFront));
+
+						isLocationValid = true;
+					}
+				}
+
+			}
+		}
+
+		return ships;
+
+	}
+
+	private static Map<String, ArrayList<ArrayList<Integer>>> createThreeBlockShip(String[][] table,
+			Map<String, ArrayList<ArrayList<Integer>>> ships,
+			String ver, String hor) {
+
+		boolean isLocationValid = false;
+		// ArrayList<int[]> shipsCooridnates = new ArrayList<int[]>();
+
+		int[] shipFront = new int[2];
+		int[] shipBack = new int[2];
 
 		while (!isLocationValid) {
 			boolean flag = true;
 			String direction = setShipDirection(ver, hor);
 
-			int[][] shipCooridnates = new int[3][2];
-
 			int[] startingCoodinates = getRandomCoordinates();
-			int[] shipFront = new int[2];
-			int[] shipBack = new int[2];
 
 			if (direction == ver) {
 				if (startingCoodinates[0] == 0 || startingCoodinates[0] == 6) {
 					flag = false;
+				} else {
+					shipFront = new int[] { startingCoodinates[0] - 1, startingCoodinates[1] };
+					shipBack = new int[] { startingCoodinates[0] + 1, startingCoodinates[1] };
+
+					ships.put("ship" + startingCoodinates[0] + startingCoodinates[1],
+							convertShipCoordinatesToArrayList(startingCoodinates, shipFront, shipBack));
 				}
-
-				shipFront = new int[] { startingCoodinates[0] - 1, startingCoodinates[1] };
-				shipBack = new int[] { startingCoodinates[0] + 1, startingCoodinates[1] };
-
-				ships.put("ship" + startingCoodinates[0] + startingCoodinates[1],
-						convertShipCoordinatesToArrayList(startingCoodinates, shipFront, shipBack));
 			} else if (direction == hor) {
 				if (startingCoodinates[1] == 0 || startingCoodinates[1] == 6) {
 					flag = false;
+				} else {
+					shipFront = new int[] { startingCoodinates[0], startingCoodinates[1] - 1 };
+					shipBack = new int[] { startingCoodinates[0], startingCoodinates[1] + 1 };
+
+					ships.put("ship" + startingCoodinates[0] + startingCoodinates[1],
+							convertShipCoordinatesToArrayList(startingCoodinates, shipFront, shipBack));
 				}
-
-				shipFront = new int[] { startingCoodinates[0], startingCoodinates[1] - 1 };
-				shipBack = new int[] { startingCoodinates[0], startingCoodinates[1] + 1 };
-
-				ships.put("ship" + startingCoodinates[0] + startingCoodinates[1],
-						convertShipCoordinatesToArrayList(startingCoodinates, shipFront, shipBack));
 			}
 
 			if (flag) {
 				isLocationValid = true;
-				shipCooridnates[0] = shipFront;
-				shipCooridnates[1] = startingCoodinates;
-				shipCooridnates[2] = shipBack;
-				displayTableWithShips(table, shipCooridnates, 7);
+				// shipsCooridnates.add(shipFront);
+				// shipsCooridnates.add(startingCoodinates);
+				// shipsCooridnates.add(shipBack);
+				// displayTableWithShips(table, shipsCooridnates, 7);
 			}
 		}
 
-		response.add(table);
-		response.add(ships);
-
-		return response;
+		return ships;
 
 	}
 
@@ -91,6 +209,22 @@ public class Main {
 
 		ArrayList<ArrayList<Integer>> ship = new ArrayList<ArrayList<Integer>>();
 		int[][] shipCoordinates = new int[][] { firstCoordinates, secondCoordinates, thirdCoordinates };
+
+		for (int[] i : shipCoordinates) {
+			ArrayList<Integer> row = new ArrayList<Integer>();
+			row.add(i[0]);
+			row.add(i[1]);
+			ship.add(row);
+		}
+
+		return ship;
+	}
+
+	private static ArrayList<ArrayList<Integer>> convertShipCoordinatesToArrayList(int[] firstCoordinates,
+			int[] secondCoordinates) {
+
+		ArrayList<ArrayList<Integer>> ship = new ArrayList<ArrayList<Integer>>();
+		int[][] shipCoordinates = new int[][] { firstCoordinates, secondCoordinates };
 
 		for (int[] i : shipCoordinates) {
 			ArrayList<Integer> row = new ArrayList<Integer>();
@@ -124,20 +258,30 @@ public class Main {
 		}
 	}
 
-	private static void displayTableWithShips(String[][] table, int[][] shipCoordinates, int dimension) {
+	private static void displayTableWithShips(String[][] table, Map<String, ArrayList<ArrayList<Integer>>> ships,
+			int dimension) {
+
+		Set<String> keys = ships.keySet();
+
 		System.out.println("  A B C D E F G");
 		for (int i = 0; i < dimension; i++) {
 			System.out.print(i + 1 + " ");
 			for (int j = 0; j < dimension; j++) {
 
 				boolean isShipThere = false;
-
-				for (int[] k : shipCoordinates) {
-					if (k[0] == i && k[1] == j) {
-						isShipThere = true;
+				for (String key : keys) {
+					for (ArrayList<Integer> arr : ships.get(key)) {
+						if (arr.get(0) == i && arr.get(1) == j) {
+							isShipThere = true;
+						}
 					}
-
 				}
+
+				// for (int[] k : shipsCoordinates) {
+				// if (k[0] == i && k[1] == j) {
+				// isShipThere = true;
+				// }
+				// }
 
 				if (isShipThere) {
 					System.out.print("O ");
@@ -164,7 +308,7 @@ public class Main {
 	}
 
 	private static int letterToNum(String letter) {
-		Map<String, Integer> lettersAndNums = new HashMap<>();
+		Map<String, Integer> lettersAndNums = new HashMap<String, Integer>();
 		{
 			lettersAndNums.put("A", 1);
 			lettersAndNums.put("B", 2);
