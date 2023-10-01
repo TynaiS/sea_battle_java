@@ -1,49 +1,182 @@
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.*;
+import java.util.stream.Collectors;
 
 public class Main {
 	public static void main(String[] args) {
+		Map<String, Integer> playersList = new HashMap<>();
+		playersList = startGame(playersList);
+	}
+
+	private static Map<String, Integer> startGame(Map<String, Integer> playersList) {
+
+		System.out.println("""
+
+				Welcome to The Sea Battle!
+				(type 'q' to quit the game and 'r' to restart the game at any moment)
+				Choose the game mode:
+				1 player - type 1
+				2 players - type 2
+				""");
+
+		int gameMode = getValidGameModeFromUser(playersList);
+		switch (gameMode) {
+			case 1:
+				playersList = startOnePlayerMode(playersList);
+				break;
+			case 2:
+				startTwoPlayersMode(playersList);
+				break;
+		}
+
+		return playersList;
+	}
+
+	private static Map<String, Integer> startOnePlayerMode(Map<String, Integer> playersList) {
 		Scanner scanner = new Scanner(System.in);
 
-		int dimension = 7;
-		String[][] defaultTable = new String[7][7];
+		String[][] defaultTable = new String[8][7];
 		String ver = "ver";
 		String hor = "hor";
+		String nickname = "";
+		int kills = 0;
+		int shots = 0;
 
 		Map<String, ArrayList<ArrayList<Integer>>> ships = new HashMap<String, ArrayList<ArrayList<Integer>>>();
 
-		System.out.println(ships);
+		System.out.println("Enter your nickname: ");
+		nickname = getNicknameFromUser(playersList);
+		System.out.println("\nHello " + nickname + "!");
 
-		defaultTable = createTable();
+		defaultTable = fillTable(defaultTable);
 
-		ships = createThreeBlockShip(defaultTable, ships, ver, hor);
+		ships = createShips(defaultTable, ships, ver, hor);
 
-		ships = createTwoBlockShip(defaultTable, ships, ver, hor);
-		ships = createTwoBlockShip(defaultTable, ships, ver, hor);
-
-		ships = createOneBlockShip(defaultTable, ships, ver, hor);
-		ships = createOneBlockShip(defaultTable, ships, ver, hor);
-		ships = createOneBlockShip(defaultTable, ships, ver, hor);
-		ships = createOneBlockShip(defaultTable, ships, ver, hor);
-
-		System.out.println(ships);
-
-		// displayTableWithShips(defaultTable, ships);
 		displayTable(defaultTable);
 
-		while (true) {
-			defaultTable = shoot(defaultTable, ships);
+		while (kills < 7) {
+			defaultTable = shoot(defaultTable, ships, kills, shots, playersList);
+			kills = Integer.parseInt(defaultTable[7][0]);
+			shots = Integer.parseInt(defaultTable[7][1]);
+		}
+
+		playersList.put(nickname, shots);
+
+		System.out.println("Congratulations, you have won!");
+
+		displayPlayersList(playersList);
+
+		System.out.println("""
+				Starting a new game in 1 player mode
+				(type 'q' to quit the game and 'r' to restart the game at any moment)""");
+		startOnePlayerMode(playersList);
+
+		return playersList;
+	}
+
+	private static void startTwoPlayersMode(Map<String, Integer> playersList) {
+
+	}
+
+	private static void handleUserQuitOrRestart(String userEnter, Map<String, Integer> playersList) {
+		if (userEnter.equals("q")) {
+			System.out.println("\nQuitting...");
+			System.exit(0);
+		} else if (userEnter.equals("r")) {
+			System.out.println("\n\n\nRestarting...");
+			startGame(playersList);
 		}
 	}
 
-	private static void createShips() {
+	private static void displayPlayersList(Map<String, Integer> playersList) {
+		System.out.println("\nList of the best players:");
+		Map<String, Integer> sortedPlayersList = playersList.entrySet().stream()
+				.sorted(Comparator.comparingInt(e -> e.getValue()))
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						Map.Entry::getValue,
+						(a, b) -> {
+							throw new AssertionError();
+						},
+						LinkedHashMap::new));
 
+		Set<String> sortedPlayersNames = sortedPlayersList.keySet();
+		Object[] sortedPlayersNamesArr = sortedPlayersNames.toArray();
+
+		for (int i = 0; i < sortedPlayersNamesArr.length; i++) {
+			System.out.println(
+					i + 1 + ") " + sortedPlayersNamesArr[i] + " - " + sortedPlayersList.get(sortedPlayersNamesArr[i])
+							+ " shots");
+		}
+	}
+
+	private static String getNicknameFromUser(Map<String, Integer> playersList) {
+		Scanner scanner = new Scanner(System.in);
+		String nickname = "";
+
+		while (nickname.length() == 0) {
+			String nicknameFromUser = scanner.nextLine().trim();
+
+			handleUserQuitOrRestart(nicknameFromUser, playersList);
+
+			if (nicknameFromUser.length() > 0) {
+				if (!playersList.containsKey(nicknameFromUser)) {
+					nickname = nicknameFromUser;
+				} else {
+					System.out.println("This name is already taken, enter another one:");
+				}
+			} else {
+				System.out.println("Your nickname cannot be empty, enter you nickname:");
+			}
+		}
+
+		return nickname;
+	}
+
+	private static int getValidGameModeFromUser(Map<String, Integer> playersList) {
+		Scanner scanner = new Scanner(System.in);
+		boolean isGameModeValid = false;
+		int gameMode = 1;
+
+		while (!isGameModeValid) {
+			String gameModeFromUser = scanner.nextLine().trim();
+
+			handleUserQuitOrRestart(gameModeFromUser, playersList);
+
+			isGameModeValid = Pattern.matches("[1-2]", gameModeFromUser);
+
+			if (isGameModeValid) {
+				gameMode = Integer.parseInt(gameModeFromUser);
+			} else {
+				System.out.println("Please, enter valid data(type '1' for 1 player mode, '2' - for 2 players mode): ");
+			}
+		}
+
+		return gameMode;
+	}
+
+	private static Map<String, ArrayList<ArrayList<Integer>>> createShips(String[][] table,
+			Map<String, ArrayList<ArrayList<Integer>>> ships, String ver, String hor) {
+
+		ships = createThreeBlockShip(table, ships, ver, hor);
+
+		ships = createTwoBlockShip(table, ships, ver, hor);
+		ships = createTwoBlockShip(table, ships, ver, hor);
+
+		ships = createOneBlockShip(table, ships, ver, hor);
+		ships = createOneBlockShip(table, ships, ver, hor);
+		ships = createOneBlockShip(table, ships, ver, hor);
+		ships = createOneBlockShip(table, ships, ver, hor);
+
+		return ships;
 	}
 
 	private static Map<String, ArrayList<ArrayList<Integer>>> createOneBlockShip(String[][] table,
@@ -304,19 +437,21 @@ public class Main {
 		return ship;
 	}
 
-	private static String[][] shoot(String[][] table, Map<String, ArrayList<ArrayList<Integer>>> ships) {
+	private static String[][] shoot(String[][] table, Map<String, ArrayList<ArrayList<Integer>>> ships, int kills,
+			int shots, Map<String, Integer> playersList) {
 
-		int[] coordinates = getValidCoordinatesFromUser();
+		int[] coordinates = getValidCoordinatesFromUser(playersList);
 		if (table[coordinates[0]][coordinates[1]] == "X"
-				|| table[coordinates[0]][coordinates[1]] == ".") {
+				|| table[coordinates[0]][coordinates[1]] == "." || table[coordinates[0]][coordinates[1]] == "D") {
 			System.out.println("You have already shot here, try other coordinates!");
-			shoot(table, ships);
+			shoot(table, ships, kills, shots, playersList);
 		} else {
 			if (isShipThere(ships, coordinates[0], coordinates[1])) {
 				table[coordinates[0]][coordinates[1]] = "X";
 				table = checkShipDamageLevel(table, ships, coordinates[0], coordinates[1]);
 				displayTable(table);
 				if (table[coordinates[0]][coordinates[1]] == "D") {
+					kills++;
 					System.out.println("Kill!!!");
 				} else {
 					System.out.println("It's a hit!");
@@ -326,7 +461,12 @@ public class Main {
 				displayTable(table);
 				System.out.println("You missed");
 			}
+			shots++;
 		}
+
+		table[7][0] = Integer.toString(kills);
+		table[7][1] = Integer.toString(shots);
+
 		return table;
 	}
 
@@ -373,7 +513,7 @@ public class Main {
 		return table;
 	}
 
-	private static int[] getValidCoordinatesFromUser() {
+	private static int[] getValidCoordinatesFromUser(Map<String, Integer> playersList) {
 
 		Scanner scanner = new Scanner(System.in);
 		int[] coordinates = new int[2];
@@ -383,7 +523,9 @@ public class Main {
 		System.out.println("Enter the coordinates for the shot(e.g. A5 or a5): ");
 
 		while (!areCoordinatesValid) {
-			String coordinatesFromUser = scanner.nextLine();
+			String coordinatesFromUser = scanner.nextLine().trim();
+
+			handleUserQuitOrRestart(coordinatesFromUser, playersList);
 
 			areCoordinatesValid = Pattern.matches("[a-gA-G][1-7]", coordinatesFromUser);
 
@@ -448,9 +590,7 @@ public class Main {
 		}
 	}
 
-	private static String[][] createTable() {
-
-		String[][] table = new String[7][7];
+	private static String[][] fillTable(String[][] table) {
 
 		for (int i = 0; i < 7; i++) {
 			for (int j = 0; j < 7; j++) {
