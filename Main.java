@@ -83,6 +83,63 @@ public class Main {
 	}
 
 	private static void startTwoPlayersMode(Map<String, Integer> playersList) {
+		Scanner scanner = new Scanner(System.in);
+
+		String[][] defaultTable = new String[8][7];
+		String[][] defaultTable2 = new String[8][7];
+		String ver = "ver";
+		String hor = "hor";
+		String nickname = "";
+		String nickname2 = "";
+		int kills = 0;
+		int kills2 = 0;
+		int shots = 0;
+		int shots2 = 0;
+
+		Map<String, ArrayList<ArrayList<Integer>>> ships = new HashMap<String, ArrayList<ArrayList<Integer>>>();
+		Map<String, ArrayList<ArrayList<Integer>>> ships2 = new HashMap<String, ArrayList<ArrayList<Integer>>>();
+
+		System.out.println("Player 1, enter your nickname: ");
+		nickname = getNicknameFromUser(playersList);
+		System.out.println("\nHello " + nickname + "!");
+
+		System.out.println("\nPlayer 2, enter your nickname: ");
+		nickname2 = getNicknameFromUser(playersList);
+		System.out.println("\nHello " + nickname2 + "!");
+
+		defaultTable = fillTable(defaultTable);
+		defaultTable2 = fillTable(defaultTable2);
+
+		ships = createShips(defaultTable, ships, ver, hor);
+		ships2 = createShips(defaultTable2, ships2, ver, hor);
+
+		while (kills < 7 && kills2 < 7) {
+			System.out.println();
+			displayTable(defaultTable);
+			defaultTable = shoot(defaultTable, ships, kills, shots, playersList, nickname);
+			kills = Integer.parseInt(defaultTable[7][0]);
+			shots = Integer.parseInt(defaultTable[7][1]);
+			if (kills == 7) {
+				break;
+			}
+
+			System.out.println();
+			displayTable(defaultTable2);
+			defaultTable2 = shoot(defaultTable2, ships2, kills2, shots2, playersList, nickname2);
+			kills2 = Integer.parseInt(defaultTable2[7][0]);
+			shots2 = Integer.parseInt(defaultTable2[7][1]);
+			if (kills2 == 7) {
+				break;
+			}
+		}
+
+		String winner = kills > kills2 ? nickname : nickname2;
+		System.out.println("Congratulations " + winner + ", you have won!");
+
+		System.out.println("""
+				Starting a new game in 2 players mode
+				(type 'q' to quit the game and 'r' to restart the game at any moment)""");
+		startTwoPlayersMode(playersList);
 
 	}
 
@@ -470,6 +527,39 @@ public class Main {
 		return table;
 	}
 
+	private static String[][] shoot(String[][] table, Map<String, ArrayList<ArrayList<Integer>>> ships, int kills,
+			int shots, Map<String, Integer> playersList, String nickname) {
+
+		int[] coordinates = getValidCoordinatesFromUser(playersList, nickname);
+		if (table[coordinates[0]][coordinates[1]] == "X"
+				|| table[coordinates[0]][coordinates[1]] == "." || table[coordinates[0]][coordinates[1]] == "D") {
+			System.out.println("You have already shot here, try other coordinates!");
+			shoot(table, ships, kills, shots, playersList);
+		} else {
+			if (isShipThere(ships, coordinates[0], coordinates[1])) {
+				table[coordinates[0]][coordinates[1]] = "X";
+				table = checkShipDamageLevel(table, ships, coordinates[0], coordinates[1]);
+				displayTable(table);
+				if (table[coordinates[0]][coordinates[1]] == "D") {
+					kills++;
+					System.out.println("Kill!!!");
+				} else {
+					System.out.println("It's a hit!");
+				}
+			} else {
+				table[coordinates[0]][coordinates[1]] = ".";
+				displayTable(table);
+				System.out.println("You missed");
+			}
+			shots++;
+		}
+
+		table[7][0] = Integer.toString(kills);
+		table[7][1] = Integer.toString(shots);
+
+		return table;
+	}
+
 	private static String[][] checkShipDamageLevel(String[][] table, Map<String, ArrayList<ArrayList<Integer>>> ships,
 			int row, int col) {
 
@@ -521,6 +611,37 @@ public class Main {
 		boolean areCoordinatesValid = false;
 
 		System.out.println("Enter the coordinates for the shot(e.g. A5 or a5): ");
+
+		while (!areCoordinatesValid) {
+			String coordinatesFromUser = scanner.nextLine().trim();
+
+			handleUserQuitOrRestart(coordinatesFromUser, playersList);
+
+			areCoordinatesValid = Pattern.matches("[a-gA-G][1-7]", coordinatesFromUser);
+
+			if (areCoordinatesValid) {
+				coordinatesString = coordinatesFromUser;
+			} else {
+				System.out.println("Please, enter valid coordinates for the shot(e.g. A5 or a5): ");
+			}
+		}
+
+		int row = Integer.parseInt(Character.toString(coordinatesString.charAt(1)));
+		int col = letterToNum(Character.toString(coordinatesString.charAt(0)).toUpperCase());
+		coordinates[0] = row - 1;
+		coordinates[1] = col - 1;
+
+		return coordinates;
+	}
+
+	private static int[] getValidCoordinatesFromUser(Map<String, Integer> playersList, String nickname) {
+
+		Scanner scanner = new Scanner(System.in);
+		int[] coordinates = new int[2];
+		String coordinatesString = "";
+		boolean areCoordinatesValid = false;
+
+		System.out.println(nickname + ", enter the coordinates for the shot(e.g. A5 or a5): ");
 
 		while (!areCoordinatesValid) {
 			String coordinatesFromUser = scanner.nextLine().trim();
